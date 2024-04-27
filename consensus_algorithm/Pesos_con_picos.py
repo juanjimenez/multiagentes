@@ -1,8 +1,16 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Apr 27 19:39:47 2024
+
+@author: abierto
+"""
+
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
 Created on Wed Mar 22 16:33:38 2020
 Ejemplo de obtención vector de stress para el paper de Zhao
+Usando picos
 @author: juanjimenez
 """
 import numpy as np
@@ -147,40 +155,3 @@ for i in enumerate(Pst):
 for i in enumerate(A):
     pl.plot(Pst[[i[1][0]-1,i[1][1]-1],0],Pst[[i[1][0]-1,i[1][1]-1],1])
 # ###################################################################
-t = 0
-tp = tf/1000
-pl.figure()
-pl.plot(P[0::2,0],P[1::2,0],'.',linewidth =0.1)
-#creamos la base de movimientos más obvia en R2
-b1 = np.array([[1,0],[0,0]])
-b2 = np.array([[0,1],[0,0]])
-b3 = np.array([[0,0],[1,0]])
-b4 = np.array([[0,0],[0,1]])
-while t <= tf:
-    t += dt
-    if t >= tp:
-        pl.plot(P[0::2,0],P[1::2,0],'.',linewidth =0.1)
-        tp += tf/1000
-   
-    #v constante    
-    #P = -10*np.kron(Omg,I)@P*dt + np.kron(np.ones([P.shape[0]//2,1]),np.array([[1],[1]]))*dt+ P
-    
-    #rotacion (0.1 rad/s)
-    #P = -10*np.kron(Omg,I)@P*dt + 0.1*np.kron(np.eye(Pr.shape[0]),np.array([[0,-1],[1,0]]))@P*dt + P
-    
-    #rotación dilatacion/contraccion
-    #P = -10*np.kron(Omg,I)@P*dt + 0.1*np.kron(np.eye(Pr.shape[0]),np.array([[0,-1],[1,0]]))@P*dt \
-    #    - 0.01*np.kron(np.eye(Pr.shape[0]),np.array([[1,0],[0,1]]))@P*dt +P
-    P = -10*np.kron(Omg,I)@P*dt + np.kron(np.eye(Pr.shape[0]),-0.1*b2+0.1*b3)@P*dt + P
-    #
-    #empleando la base
-    
-
-Pst = np.array([P[0::2,0],P[1::2,0]]).T
-for i in enumerate(Pst):
-    pl.gca().text(i[1][0],i[1][1],str(i[0]+1))
-for i in enumerate(A):
-    pl.plot(Pst[[i[1][0]-1,i[1][1]-1],0],Pst[[i[1][0]-1,i[1][1]-1],1])
-    
-    
-
