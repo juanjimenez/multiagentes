@@ -1,0 +1,7 @@
+*.aux
+*.blg
+*.log
+*.gz
+*.bak
+*.bbl
+__pycache__

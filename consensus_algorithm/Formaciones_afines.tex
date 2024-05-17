@@ -4,8 +4,9 @@
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
+\usepackage{amsthm}
 \usepackage{graphicx}
-
+\newtheorem{lem}{lema}
 \title{Notas en algoritmos de consenso y Formaciones Afines para multiagentes}
 \begin{document}
 \section{Introducción}
@@ -31,6 +32,10 @@ El uso de las matrices de tensiones es muy atractivo ya que son invariantes a cu
 \begin{enumerate}
 \item Dado un conjunto cualquiera $\mathcal{X}$ llamamos $\vert \mathcal{X} \vert$ a su cardinal.
 \item $\mathbf{1}_n \in \mathbb{R}^p$ vector columna de todo unos. 
+\item Dado un vector, $x$ $\text{diag}(x)$ representa la matriz diagonal construida de modo que los elementos de la diagonal son los correspondientes del vector $\text{diag(x)}_{ii} =x_i$
+
+\item $I_d \in \mathbb{R}^{d\times d}$, es la matriz identidad.
+
 \item $\otimes$ representa el producto de Kroneker de dos matrices,
 \begin{equation}
 A\otimes B = \begin{pmatrix}
@@ -48,7 +53,7 @@ $A\in \mathbb{R}^{n\times m},\ B\in \mathbb{R}^{k\times l} \rightarrow A\otimes 
 \item Un grafo es no dirigido si $(i,j)\in \mathcal{E} \Leftrightarrow (j,i) \in \mathcal{E}$. Mientras  no se diga lo contrario, los grafos que usamos son no dirigidos.
 \item Se puede dar una orientación  un grafo dando una orientación a cada uno de los ejes no dirigidos. De esta forma, Podemos construir un conjunto ordenado (o orientado) de ejes $\mathcal{Z}$ elegiendo una de las dos direcciones arbitrarias para cada par de nodos conectados entre sí. $\mathcal{Z}_k=(\mathcal{Z}_k^{head} \mathcal{Z}_k^{tail})$, $k \in \{1,\cdots,\frac{\vert\mathcal{E}\vert}{2}\}$. El primer elemento recibe el nombre de cabeza del eje dirigido y el segundo recibe el nombre de cola.
 
-\item Matriz de incidencia. Nosotros la construimos como un a matriz $B \in \mathbb{R}^{\vert \mathcal{V} \vert \times \vert \mathcal{Z}\vert}$,
+\item Matriz de incidencia. Nosotros la construimos como un a matriz $B \in \mathbb{R}^{\vert \mathcal{V} \vert \times \vert \mathcal{Z}\vert}$ \cite{Marina2021},
 \begin{equation}
 b_{ik}:= \left\{ \begin{array}{ll}
 +1 & \text{if } i =\mathcal{Z}_k^{tail}\\
@@ -60,8 +65,33 @@ Es interesante hacer notar que el número de filas de la matriz de incidencia co
 
 \item Una formación $(\mathcal{G},p)$ Es un par formado por una grafo y una configuración de modo que el vértice $i$ corresponde a la posición $p_i$ del agente $i$.
 
+\item Definimos $\text{vec}(\cdot)$ como el vector que se obtiene al apilar todas las columnas de una matriz. Propiedades importantes: $vec(ABC) = (C^T \otimes A)\text{vec}(B)$. Con $A$,$B$ y $C$ matrices de las dimensiones adecuadas. Por tanto, $x\otimes y =\text{vec}(y,x^T)$.
 
-  
+\item $\text{Null}(\cdot)$ Espacio nulo de una matriz, es decir el espacio compuesto por aquellos vectores $x$ que cumplen $Ax=0, x \neq 0$.
+\item $\text{Col}(\cdot)$ Espacio vectorial formado por la columnas de una matriz, tomadas como vectores.
+
+\item $\Vert \cdot \Vert$ Norma euclidea (norma 2) de un vector y Norma expectral (norma 2) de una matriz (raíz del mayor de sus valores singulares).
+
+\item Expansión afín. Dado un conjunto de puntos $\{p_i\}_{i=1}^n$ La expansión afín de dichos puntos se define como:
+\begin{equation}
+\mathcal{S} = \left\lbrace \sum_{i=1}^na_ip_i\ :\ a_i \in \mathbb{R}\ \forall i\ and \sum_{i=1}^na_i = 1 \right\rbrace
+\end{equation}
+(para dos puntos una recta, para tres puntos no alineados un plano, etc.)
+
+\item Dependencia afin. Dado un conjunto de puntos $\{p_i\}_{i=1}^n$ se dice que son afinmente dependientes si Si existen escalares $\{a_i\}_{i=1}^n$ no todos nulos, tales que $\sum_{i=1}^na_ip_i =0$ y $\sum_{i=1}^na_i=0$. Si no, se dice que son afinmente independientes.
+\item Matriz de configuración: A partir de un conjunto de puntos, $\{p_i\}_{i=1}^n$, se define como la matriz $P$ formada por los vectores $p_i^T$, apilados. $P\in \mathbb{R}^{n\times d}$
+\begin{equation}
+P(p) = \begin{bmatrix}
+p_1^T\\ \vdots \\ p_n^T
+\end{bmatrix}
+\end{equation}
+
+\item Matriz de configuración aumentada: $\bar{P}(p) =[P(p), \mathbf{1}_n]$. Un conjunto de puntos $\{p_i\}_{i=1}^n$ es afinmente dependiente si las filas de $\bar{P}(p)$ son linealmente dependientes, es decir, si existe $a = [a_1,\cdots, a_n]$ tales que $\bar{P}(p)a = 0$ y son afinmente independientes si las filas de $\bar{P}(p)$ lo son. Las filas de la matriz de configuración aumentada tienen $d+1$ elementos, por tanto puede haber como mucho $d+1$ puntos linealmente independientes en $\mathbb{R}^d$.
+
+\item Si $\{p_i\}_{i=1}^n$ expande afinmente $\mathbb{R}^d$ tienen que existir en la colección $d+1$ puntos que sean afinmente independientes. En consecuencia, $\bar{P}(p)$ tiene $d+1$ filas linealmente independientes, y por tanto, tiene rango $d+1$
+\begin{lem}{Condición del rango de la matriz aumentada de configuración para una exansión afín del espacio de definición.}
+El conjunto de puntos $\{p_i\}_{i=1}^n$ expande afinmente el espacio $\mathbb{R}^d$ si y solo si $n \geq d+1$ y $\textrm{rank}(\bar{P}(p)) = d+1$.
+\end{lem}
 \end{enumerate}
 
 
