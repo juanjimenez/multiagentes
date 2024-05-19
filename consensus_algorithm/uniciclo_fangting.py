@@ -1,14 +1,11 @@
-#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Fri May 17 15:55:22 2024
+Created on Sat May 18 13:58:43 2024
 
-@author: Fangting
+@author: abierto
 """
-
 import numpy as np
-#from scipy.integrate import odeint
-from scipy.integrate import solve_ivp as sl
+from scipy.integrate import solve_ivp, odeint, RK45, OdeSolver
 import matplotlib.pyplot as plt
 
 #CASO DE N ROBOTS EN UN ESPACIO n-DIMENSIONAL
@@ -17,27 +14,25 @@ import matplotlib.pyplot as plt
 
 np.random.seed(123)
 
-#Definimos en una función las ecuaciones de la trayectoria 
+#Definimos en una función las ecuaciones de la trayectoria de un uniciclo
 
-def fun(w):
-    #f1 = 15*np.sin(2*w)
-    #f2 = 30*np.sin(w)*(np.sqrt(0.5*(1-0.5*(np.sin(w))**2)))
-    #f3 = 3+5*np.cos(2*w)
-    f1 = 10*np.sin(w)+20*np.sin(2*w)
-    f2 = 10*np.cos(w)-20*np.cos(2*w)
-    f3 = -40*np.sin(3*w)
-    return np.array([f1, f2, f3])
+def fun(v,w,theta):
+    xdot=v*np.cos(theta)
+    ydot=v*np.sin(theta)
+    thetadot=w
+    sdot=np.array([xdot,ydot,thetadot])
+    return sdot
 
 #funciones phi
-def phi(vec_pos):
-    f = fun(vec_pos[-1])
+def phi(v,vec_pos,theta):
+    f = fun(v,vec_pos[-1],theta)
     return vec_pos[:-1] - f
 
 # calculamos la derivada de las ecuaciones de la trayectoria
-def d_fun(w):
+def d_fun(v,w,theta):
     #derivada central
     h = 1e-8 #paso
-    df = (fun(w+h)-fun(w-h))/(2*h)
+    df = (fun(v,w+h,theta)-fun(v,w-h,theta))/(2*h)
     return df
 
 #matriz lapaciana de un grafo (los agentes están comunicados con los vecinos adyacentes)
@@ -58,7 +53,7 @@ def grafo_L(N):
     
     return L
 
-def vector_field(t,xi,k,n,N,ww,kc,L):
+def vector_field(xi,t,k,n,N,ww,kc,L,v,theta):
     #xi: posiciones de todos los agentes (vector columna con las 4 coordenadas )
     #t: tiempo
     #k: ganancias positivas
@@ -75,8 +70,8 @@ def vector_field(t,xi,k,n,N,ww,kc,L):
     j = 0 
     for i in lista[:-1]: 
         x = xi[i:i+(n+1)]               #coordenada inicial + virtual de cada agente
-        PHI[i-j:(i-j)+n] = phi(x)       #función surface 
-        df[i-j:(i-j)+n] = d_fun(x[-1])  #derivada 
+        PHI[i-j:(i-j)+n] = phi(v,x,theta)       #función surface 
+        df[i-j:(i-j)+n] = d_fun(v,x[-1],theta)  #derivada 
         w[j] = x[-1]                    #coordenadas virtuales 
         j += 1
 
@@ -108,6 +103,8 @@ n = 3           #dimensiones del espacio
 N = 20           #nº de agentes 
 t = np.linspace(0,200,1000) #tiempo de integración 
 ki =[1,1,2] #ganancias 
+v = 12  #velocidad 
+theta = np.pi/4 #angulo yaw 
 
 #coordenadas iniciales de los robots 
 #pos = np.random.rand(N, n)*100 #filas: dimensiones
@@ -135,8 +132,9 @@ for i in range(N):
     ww[i] = i*Delta
 
 #resolvemos las ecuación diferencial 
-#sol = odeint(vector_field,Xi[0],t,args=(ki,n,N,ww,kc,L))
-sol = sl(vector_field, (0,200),Xi[0],method='LSODA',args=(ki,n,N,ww,kc,L),max_step=0.2) 
+sol = odeint(vector_field,Xi[0],t,args=(ki,n,N,ww,kc,L,v,theta))
+
+
 #representación gráfica 
 
 fig = plt.figure()
@@ -144,8 +142,8 @@ ax = fig.add_subplot(projection='3d')
 
 lista = np.arange(0,(n+1)*N+1,(n+1))
 for i in lista[:-1]: 
-    ax.plot(sol.y[i,:], sol.y[i+1,:], sol.y[i+2,:])
-    ax.scatter(sol.y[i,0],sol.y[i+1,0], sol.y[i+2,0], marker='o')
+    ax.plot(sol[:,i], sol[:,i+1], sol[:,i+2])
+    ax.scatter(sol[0,i],sol[0,i+1], sol[0,i+2], marker='o')
 
 ax.set_xlabel('x')
 ax.set_ylabel('y')
