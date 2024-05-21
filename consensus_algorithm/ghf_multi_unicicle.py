@@ -89,7 +89,8 @@ def din_agen(N,x,K,kc,Kth,L,v,E,wstr):
              np.zeros((4,i)),\
              np.vstack((-ddf + K@df,Kphi.T@ddf-np.ones((1,3))@K@df**2)),np.zeros((4,N-1-i))))
         Jcr = np.hstack((np.zeros((4,3)),np.vstack((np.zeros((3,N)),-L[i,:]))))
-        Jxip = (np.eye(4)-Xib@Xib.T)@(Jpf+kc*Jcr)/
+        Jxip = (np.eye(4)-Xib@Xib.T)@(Jpf+kc*Jcr)/Xib
+        
     
     
     
