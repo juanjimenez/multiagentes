@@ -38,7 +38,7 @@ def ddfun(w):
     '''
     Derivada segunda de la función fun, La defino explícitamente
     '''
-    ddf1 = -10*np.sin(w) - 40*np.sin(2*w)
+    ddf1 = -10*np.sin(w) - 80*np.sin(2*w)
     ddf2 = -10*np.cos(w) + 80*np.cos(2*w)
     ddf3 = 180*np.sin(3*w)
     return np.array([[ddf1], [ddf2], [ddf3]])
@@ -60,7 +60,7 @@ def grafo_L(N):
     return L
 
 
-def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
+def din_agen(t,x,K,kth,v,E):
     ''' 
     Esta funcion define la dinamica de un agente
     incluye la guia del campo y el efecto de la  cordinación
@@ -68,84 +68,70 @@ def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
     En general, salvo que se diga lo contrario cada columna de valores 
     corresponde a un agente y cada fila a una variable (x,y,z,w),theta)
     '''
-    x = x.reshape(5,N)
-    c = -L@(x[3,:] - wstr)
-    dp = np.zeros((4,N)) #guardar las derivadas de los estados excepto theta
-    bXipn = [] #
-    Jxip = []  #Jacobiano del campo
-    nXipt = []                   
-    for i in range(N):
-        #calculamos el valor del campo guía en la posición del agente
-        xi =x[:,i:i+1]
-        w = xi[3,0]
-        p = xi[0:3]
-        f = fun(w)
-        df = dfun(w)
-        ddf = ddfun(w)
-        Kphi = K@(p-f)
-        Kdf  = K@df
-        Xi = np.vstack((-df-Kphi,-1+Kphi.T@df + kc*c[i]))
-        nXi = np.linalg.norm(Xi)
-        Xib = Xi/nXi
-        nXip = np.linalg.norm(Xi[0:2])
-        nXipt.append(nXip)
-        bXipn.append(xi[0:2]/nXip)
-        dp1 = np.cos(xi[4]) #x
-        dp2 = np.sin(xi[4]) #y
-        dp3 = Xi[2]/nXip    #z
-        dp4 = Xi[3]/nXip    #w (la coordenada virtual)
-        dp[:,i]= (v*np.hstack((dp1,dp2,dp3,dp4))) 
-        
-        Jpf =np.hstack( \
-            (np.vstack((-K,Kdf.T)),\
-             np.zeros((4,i)),\
-             np.vstack((-ddf + K@df,Kphi.T@ddf-np.ones((1,3))@K@df**2)),np.zeros((4,N-1-i))))
-        Jcr = np.hstack((np.zeros((4,3)),np.vstack((np.zeros((3,N)),-L[i,:]))))
-        Jxip.append(((np.eye(4)-Xib@Xib.T)@(Jpf+kc*Jcr)/Xib)[0:2,:])
+   
+    #c = -L@(x[3,:] - wstr)
+    dp = np.zeros((5,1)) #guardar las derivadas de los estados excepto theta
+    #calculamos el valor del campo guía en la posición del agente
+    xi= x.reshape(5,1)
+    p = xi[0:3]
+    w = xi[3,0]
+    f = fun(w)
+    df = dfun(w)
+    ddf = ddfun(w)
+    Kphi = K@(p-f)
+    Kdf  = K@df
+    Xi = np.vstack((-df-Kphi,-1+Kphi.T@df))
+    nXi = np.linalg.norm(Xi)
+    Xib = Xi/nXi
+    nXip = np.linalg.norm(Xi[0:2])
+    bXipn = xi[0:2]/nXip
+    dp[0] = v*np.cos(xi[4,0]) #x
+    dp[1] = v*np.sin(xi[4,0]) #y
+    dp[2] = v*Xi[2,0]/nXip    #z
+    dp[3]=  v*Xi[3,0]/nXip    #w (la coordenada virtual)
     
-    dwbold = dp[3,:]
-    dp = np.vstack((dp,np.zeros((1,N))))
-    for i in range(N):
-        #definimos la dinámica  de theta y la ley de control
-        dp[4,i] = -(bXipn[i].T@E@Jxip[i]@np.append(dp[0:3,i:i+1],dwbold)/nXipt[i]\
-            -kth*dp[0:2,i]@E@bXipn[i])[0]#dot theta       
-    return dp.reshape(5*N)
+        
+    Jpf =np.hstack( \
+        (np.vstack((-K,Kdf.T)),\
+         np.vstack((-ddf + K@df,Kphi.T@ddf-np.ones((1,3))@K@df**2))))
+        
+    Jxip= ((np.eye(4)-Xib@Xib.T)@Jpf/Xib)[0:2,:]
+    dp[4] = -(bXipn.T@E@Jxip@dp[0:4]/np.linalg.norm(Xib[0:2])\
+            -kth*dp[0:2].T/v@E@bXipn)[0]#dot theta       
+    return dp.reshape(5)
     
 ###########################Integracion del modelo#############################
 
 
 #Parámetro de simulación 
 #dimensiones del espacio 3D
-N = 4         #nº de agentes 
-K =np.diag([1,1,2]) #ganancias
-kc = 200
+ 
+K =np.diag([0.002,0.002,0.002]) #ganancias
+
 kth = 1
-L = grafo_L(N) #laplaciana daisy chain de la formacion
-v = 2 #velocidad fija de los uniciclos
+
+v = 10 #velocidad fija de los uniciclos
 #coordenadas iniciales de los robots 
 #pos = np.random.rand(N, n)*100 #filas: dimensiones
 E = np.array([[0,-1],[1,0]])                          #columnas: nº de robots
-p = np.random.randint(-50, 51, size=(N, 3))
-theta = 2*np.pi*np.random.random((N,1))
+p = np.random.randint(-50, 51, size=(3))
+theta = 2*np.pi*np.random.random((1))
 
 #añadimos a la matriz de posiciones la coordenada virtual w 
-w = np.ones((N,1)) #ejemplo: todos valen 1
-wstr = np.arange(0,2*np.pi,2*np.pi/N)    #distribución deseada
-x = np.hstack((p,w,theta)).reshape(5*N)
-t = (0,2)
+w = 1 #ejemplo: todos valen 1
+x = np.hstack((p,w,theta))
+t = (0,200)
 sol = sl(din_agen,t,x,method='LSODA',\
-         args=(N,K,kc,kth,L,v,E,wstr),max_step=0.2)
+         args=(K,kth,v,E),max_step=0.2)
 
 #representación gráfica 
 
 fig = plt.figure()
 ax = fig.add_subplot(projection='3d')
-
-lista = np.arange(0,(4)*N+1,(4))
-for i in lista[:-1]: 
-    ax.plot(sol.y[i,:], sol.y[i+1,:], sol.y[i+2,:])
-    ax.scatter(sol.y[i,0],sol.y[i+1,0], sol.y[i+2,0], marker='o')
-
+# ax.plot(sol.y[,:], sol.y[i+1,:], sol.y[i+2,:])
+#     ax.scatter(sol.y[i,0],sol.y[i+1,0], sol.y[i+2,0], marker='o')
+ax.plot(sol.y[0,:],sol.y[1,:],sol.y[2,:])
+ax.plot(sol.y[0,0],sol.y[1,0],sol.y[2,0],'o')
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
