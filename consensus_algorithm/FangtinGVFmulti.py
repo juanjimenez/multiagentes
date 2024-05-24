@@ -146,6 +146,7 @@ lista = np.arange(0,(n+1)*N+1,(n+1))
 for i in lista[:-1]: 
     ax.plot(sol.y[i,:], sol.y[i+1,:], sol.y[i+2,:])
     ax.scatter(sol.y[i,0],sol.y[i+1,0], sol.y[i+2,0], marker='o')
+    ax.scatter(sol.y[i,-1],sol.y[i+1,-1],sol.y[i+2,-1], marker='^')
 
 ax.set_xlabel('x')
 ax.set_ylabel('y')
