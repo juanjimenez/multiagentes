@@ -119,7 +119,7 @@ def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
 
 #Parámetro de simulación 
 #dimensiones del espacio 3D
-N = 3   #nº de agentes 
+N = 20 #nº de agentes 
 K =np.diag([0.002,0.002,0.002]) #ganancias
 kc =1 #1
 kth = 10
@@ -152,10 +152,14 @@ y = y.squeeze()
 ax.plot(y[:,0],y[:,1],y[:,2],'g')
 
 x = sol.y.reshape(N,5,-1)
+count = 1
 for i in x: 
     ax.plot(i[0,:], i[1,:], i[2,:])
     ax.scatter(i[0,0],i[1,0], i[2,0], marker='o')
+    ax.text(i[0,0],i[1,0], i[2,0], str(count),color ='red')
     ax.scatter(i[0,-1],i[1,-1],i[2,-1],marker='^')
+    ax.text(i[0,-1],i[1,-1],i[2,-1],str(count))
+    count = count + 1
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
