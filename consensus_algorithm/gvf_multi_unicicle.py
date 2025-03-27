@@ -89,8 +89,12 @@ def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
         nXi = np.linalg.norm(Xi)
         Xib = Xi/nXi
         nXip = np.linalg.norm(Xi[0:2])
+<<<<<<< HEAD
         
         nXipt.append(nXip)
+=======
+        nXipt.append(np.linalg.norm(Xib[0:2]))
+>>>>>>> 43fdb6a2bb7924dde8f8917caaa66f081c7b34c9
         bXipn.append(Xi[0:2]/nXip)
         dp1 = np.cos(xi[4]) #x
         dp2 = np.sin(xi[4]) #y
@@ -101,18 +105,27 @@ def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
         Jpf1 = np.vstack((-K,Kdf.T))
         Jpf2 = np.zeros((4,i))
         Jpf3 = np.vstack((-ddf + K@df,Kphi.T@ddf-np.ones((1,3))@K@df**2))
-        Jpf4 = np.zeros((4,N-1-i))
+        Jpf4 = np.zeros((4,N-i-1))
         Jpf  = np.hstack((Jpf1,Jpf2,Jpf3,Jpf4))             
         Jcr = np.hstack((np.zeros((4,3)),np.vstack((np.zeros((3,N)),-L[i,:]))))
+<<<<<<< HEAD
        
+=======
+>>>>>>> 43fdb6a2bb7924dde8f8917caaa66f081c7b34c9
         Jxip.append(((np.eye(4)-Xib@Xib.T)@(Jpf+kc*Jcr)/nXi)[0:2,:])
     
     dwbold = dp[3,:]
     dp = np.vstack((dp,np.zeros((1,N))))
     for i in range(N):
         #definimos la dinámica  de theta y la ley de control
+<<<<<<< HEAD
         dp[4,i] = (-bXipn[i].T@E@Jxip[i]@np.append(dp[0:3,i:i+1],dwbold)/nXipt[i]\
                   -kth*dp[0:2,i]/v@E@bXipn[i])[0]#dot theta       
+=======
+        thetapd = -bXipn[i].T@E@Jxip[i]@np.append(dp[0:3,i:i+1],dwbold)/nXipt[i]
+        dp[4,i] = (thetapd -kth*dp[0:2,i]/v@E@bXipn[i])[0] 
+                 #dot theta       
+>>>>>>> 43fdb6a2bb7924dde8f8917caaa66f081c7b34c9
     return dp.T.reshape(5*N)
     #return dp.T.reshape(4*N)
 ###########################Integracion del modelo#############################
@@ -120,10 +133,14 @@ def din_agen(t,x,N,K,kc,kth,L,v,E,wstr):
 
 #Parámetro de simulación 
 #dimensiones del espacio 3D
+<<<<<<< HEAD
 N = 2    #nº de agentes 
+=======
+N = 20 #nº de agentes 
+>>>>>>> 43fdb6a2bb7924dde8f8917caaa66f081c7b34c9
 K =np.diag([0.002,0.002,0.002]) #ganancias
-kc = 1
-kth = 1
+kc =1 #1
+kth = 10
 L = grafo_L(N) #laplaciana daisy chain de la formacion
 v = 10 #velocidad fija de los uniciclos
 #coordenadas iniciales de los robots 
@@ -152,11 +169,23 @@ y = np.array(y)
 y = y.squeeze()
 ax.plot(y[:,0],y[:,1],y[:,2],'g')
 
+<<<<<<< HEAD
 lista = np.arange(0,(4)*N+1,(4))
 for i in lista[:-1]: 
     ax.plot(sol.y[i,:], sol.y[i+1,:], sol.y[i+2,:])
     ax.scatter(sol.y[i,0],sol.y[i+1,0], sol.y[i+2,0], marker='o')
     ax.scatter(sol.y[i,-1],sol.y[i+1,-1],sol.y[i+2,-1],marker='^')
+=======
+x = sol.y.reshape(N,5,-1)
+count = 1
+for i in x: 
+    ax.plot(i[0,:], i[1,:], i[2,:])
+    ax.scatter(i[0,0],i[1,0], i[2,0], marker='o')
+    ax.text(i[0,0],i[1,0], i[2,0], str(count),color ='red')
+    ax.scatter(i[0,-1],i[1,-1],i[2,-1],marker='^')
+    ax.text(i[0,-1],i[1,-1],i[2,-1],str(count))
+    count = count + 1
+>>>>>>> 43fdb6a2bb7924dde8f8917caaa66f081c7b34c9
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
