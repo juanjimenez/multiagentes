@@ -1,0 +1,4 @@
+Well, I have read the reviewer's comments. We may easily address some of them. Others are nonsense for a conference paper.
+
+1. The paper provides some clear advantages in the intro that are a direct consequence of the approach. For instance it doesn't prescribe a specific formation for the agent, you don't need to calculate gradients of Hessians, etc, etc.
+   
