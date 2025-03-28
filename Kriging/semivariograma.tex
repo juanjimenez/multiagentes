@@ -1,0 +1,47 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\begin{document}
+	
+	A \textbf{semivariogram} is a fundamental tool used in spatial statistics and geostatistics to measure the spatial dependence or correlation between values at different locations in a field or dataset. It's commonly used in the context of spatial interpolation, such as Kriging.
+	
+	\section*{How it works:}
+	
+	\subsection*{1. Spatial Dependency}
+	The semivariogram describes how the variance (or "spread") between data points changes as a function of the distance between those points. In simpler terms, it shows how similar (or dissimilar) measurements at different locations are, depending on how far apart they are.
+	
+	\subsection*{2. Calculation of Semivariance}
+	For two points, the semivariance \( \gamma(h) \) at a given lag distance \( h \) is calculated as:
+	
+	\[
+	\gamma(h) = \frac{1}{2N(h)} \sum_{i=1}^{N(h)} [Z(x_i) - Z(x_i + h)]^2
+	\]
+	
+	Where:
+	\begin{itemize}
+		\item \( \gamma(h) \) is the semivariance at distance \( h \),
+		\item \( Z(x_i) \) is the value of the variable at location \( x_i \),
+		\item \( N(h) \) is the number of pairs of data points separated by distance \( h \).
+	\end{itemize}
+	
+	In short, it compares the squared differences of values at pairs of points separated by distance \( h \).
+	
+	\subsection*{3. The Semivariogram Plot}
+	The semivariogram is usually plotted as a graph of \textbf{semivariance} (\( \gamma(h) \)) on the y-axis vs. \textbf{distance} (lag, \( h \)) on the x-axis. The graph typically shows:
+	\begin{itemize}
+		\item \textbf{Nugget}: The semivariance at a very small distance, often reflecting measurement errors or spatial variability at very small scales (where data is almost identical for very close points).
+		\item \textbf{Sill}: The maximum semivariance, representing the point at which the spatial correlation becomes negligible, i.e., beyond this distance, the points are essentially uncorrelated.
+		\item \textbf{Range}: The distance at which the semivariogram reaches the sill. Beyond this range, the spatial dependence diminishes.
+	\end{itemize}
+	
+	\subsection*{4. Interpretation}
+	\begin{itemize}
+		\item \textbf{Small Semivariance} (at short distances): This indicates that data values at those points are similar (high correlation).
+		\item \textbf{Increasing Semivariance}: As distance increases, if the semivariance increases, it suggests that the data values are becoming more dissimilar.
+		\item \textbf{Plateauing Semivariance}: If it reaches a plateau (the sill), this means that at larger distances, there is no longer any spatial correlation between the points.
+	\end{itemize}
+	
+	\subsection*{5. Application}
+	The semivariogram is used in spatial modeling and geostatistical methods like \textbf{Kriging} to predict values at unknown locations based on observed data.
+	
+\end{document}

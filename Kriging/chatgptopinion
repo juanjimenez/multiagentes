@@ -1,0 +1,54 @@
+This Python code is about geostatistics and specifically focuses on **kriging interpolation** using both a **real random field** and a **simulated random field** to estimate values at unknown locations based on measurements at known locations. Let's break it down step by step:
+
+### Libraries
+- **NumPy**: Provides support for arrays and mathematical operations.
+- **Matplotlib**: Used for visualizing the results via plots.
+- **pykrige**: A Python library for kriging (interpolation), specifically the `UniversalKriging` class.
+- **gstools**: Provides tools for creating random fields based on geostatistical models.
+
+### Main Steps in the Code:
+
+1. **Define Random Field Properties**:
+    - The random field is generated in 2D using both a **real random field** and a **simulated random field**. The grid size is 50 by 50, and the domain has a length \(L = 10\). 
+    - The **real random field** is generated with a deterministic combination of sine and cosine functions (plus some noise). This is just a function to simulate real data that could later be used for interpolation.
+    - A **simulated random field** is generated using `gstools`. The model used here is a **Gaussian model** with specified variance and length scale, which represents the spatial dependence in the data.
+
+2. **Generate Random Measurement Points**:
+    - The number of measurement points is set to `n_puntos = 10`. These points are chosen randomly within the domain of the field (between 0 and 10 for both x and y axes).
+    - The field values at those measurement points are obtained by evaluating the `srf` (simulated random field) model at those coordinates.
+
+3. **Variogram Function**:
+    - The variogram is an essential component in geostatistics. It describes the spatial correlation of the data at different distances. The `variogram` function defines this as a function of the separation distance `h`, and it is based on a **Gaussian** form (`exp(-abs(h)**q / theta)`).
+    - The code comments mention the desire to include anisotropy, but it’s unclear how to incorporate it into the `UniversalKriging` model, as `UniversalKriging` only expects a scalar distance `h`.
+
+4. **Universal Kriging Interpolation**:
+    - **Universal Kriging** is performed using the `UniversalKriging` class from `pykrige`. This method will estimate the field values at all grid points based on the 10 randomly sampled points. The variogram parameters (`theta`, `q`, `sigma`) are passed along with the custom variogram function.
+    - The `drift_terms=["regional_linear"]` indicates a linear drift term for the model (which assumes a trend in the field).
+
+5. **Results Visualization**:
+    - The results are plotted in a 1x3 grid of subplots:
+        - **Real Field**: Visualizes the true random field (`campo_real`) with the measurement points plotted.
+        - **Estimated Field**: Visualizes the kriging estimated field (`campo_estimado`), based on the measurements.
+        - **Variance of Estimates**: Visualizes the estimated variance (`varianza_estimada`), which shows how confident the kriging method is about its predictions at each point.
+    - The scatter points on each plot represent the locations of the known data points.
+
+6. **Point-wise Comparisons**:
+    - For each of the `n_puntos` measurement points, the **real values**, **estimated values**, and **variance** are printed.
+    - The real field values at the measurement points are compared with the kriged estimates and the corresponding variances.
+
+### Key Concepts:
+- **Kriging**: A geostatistical method for interpolation that not only estimates the field values at unmeasured locations but also provides an estimate of the variance (uncertainty) of those predictions.
+- **Variogram**: A function that describes how data points correlate based on their separation distance. It plays a central role in kriging.
+- **Universal Kriging**: A kriging method that accounts for a trend (drift) in the data in addition to the spatial correlation.
+- **Anisotropy**: In geostatistics, anisotropy means that the spatial correlation structure depends on direction (i.e., the model behaves differently depending on the orientation of the distance vector `h`).
+
+### What You Might Be Interested in Improving or Expanding:
+- The `variogram` function could potentially be modified to include **anisotropy**, which would require considering the directional dependence of the spatial correlation.
+- The **drift term** could be adjusted further, or more complex models could be used for the trend if necessary.
+- The code could also include further **validation metrics** or comparisons between estimated and true values beyond the graphical representation.
+
+### Code Improvements/Corrections:
+- The `puntos_z = np.array(puntos_z)` line might be useful if you want to convert the list of values (`puntos_z`) into a NumPy array (for more efficient numerical operations).
+- The question about the **saturation of the variance** (`var**2`) in the variogram is a valid point. The variance of the field could potentially be limited based on the specific type of model chosen (for example, Gaussian or Exponential). If you want the model to explicitly limit the variance, you may need to introduce additional constraints.
+
+

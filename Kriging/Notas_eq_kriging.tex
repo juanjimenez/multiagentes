@@ -7,19 +7,20 @@
 \usepackage{graphicx}
 \begin{document}
 \section{Notas en la obtención de las ecuaciones de Kriging}
-\subsection{definiciones básicas}
+
+\subsection{definiciones básicas \protect\footnote{Sigo siempre la notación del artículo de Kahn}}
 Consideramos un campo continuo e invariante en el tiempo,
 \begin{equation*}
 \phi:x\in D \rightarrow \phi(x) \in \mathbb{R}: D \subset \mathbb{R}^m
 \end{equation*}
 Modelamos $\phi$ como un proceso gaussiano,
-\begin{equation}
+\begin{equation}\label{eq:krguni}
 \Omega(x) = r(x)^T\beta+ Z(x),
 \end{equation}
-Donde $r$ es un vector de funciones de regresión conocidas,\\
-$r(x) = (r_1(x),r_2(x)\cdots, r_k(x))^T$ y $\beta =(\beta_1,\beta_2,\cdots, \beta_k)$ es un vector de parámetros, también conocidos.
+Donde $r(x)$ es un vector de funciones de regresión conocidas,\\
+$r(x) = [r_1(x),r_2(x)\cdots, r_k(x)]^T$ y $\beta =[\beta_1,\beta_2,\cdots, \beta_k]^T$ es un vector de parámetros, también conocidos.
  
-Z(x) es un proceso gaussiano de media zero, cuya función de covarianza modelamos como,
+Z(x) es un proceso gaussiano de \textbf{media zero}, cuya función de covarianza\footnote{El valor esperado de una función gaussiana E(Z(x)) = m es la media de la función, la covarianza de dos variables aleatorias se define como $\text{cov}(X,Y) =E(X-E(X))\cdot E(Y-E(Y))$, para el proceso gaussiano que estamos describiendo, la covarianza entre los valores de dos puntos sería $\text{cov}(Z(x),Z(x')) =E[(Z(x)-E(Z(x))\cdot(Z(x')-E(Z(x'))]  = E(Z(x)Z(x'))$, porque la media de Z es cero.}  modelamos como,
 \begin{equation}\label{eq:cov}
 \begin{split}
 \text{cov}(Z(x),Z(x')) &= \sigma_z^2\xi(x,x')\\
@@ -27,9 +28,44 @@ Z(x) es un proceso gaussiano de media zero, cuya función de covarianza modelamo
 \end{split}
 \end{equation}
 Donde $x_i$ es la componente $i$ del vector $x$.
-Supongamos que tenemos un conjunto de $n$ medidas ruidosas, de nuestro campo $y = [y(x^{(1)}),y(x^{(2)}),\cdots, y(x^{(n))}]$. Nuestras medidas son una realización del proceso gaussiano,
+
+En principio, si asumimos un modelo como el de la ecuación \ref{eq:krguni} El modelo corresponde en geoestadística a lo que se conoce con el nombre de \emph{Kriging Universal}. Hay más posibilidades si definimos, en general el modelo como,
+
+\begin{equation*}
+	Y(x) = \mu(x) + Z(x)
+\end{equation*} 
+Con $Z(\cdot)$ un proceso estocástico general de media cero y $\mu(\cdot)$ un modelo paramétrico que expresa el valor esperado (la media) del proceso en cada punto. Podemos definir los siguientes tipos de Kriging:
+\begin{enumerate}
+	\item \textbf{Kriging Simple:} Se supone conocida la estructura tanto de la media $\mu(x)$ como de la covarianza de la parte estocástica del modelo $\text{cov}[Z(x),Z(x')]$. 
+	
+	\item \textbf{Kriging Ordinario:} La media $\mu(x) = \mu$ es desconocida pero se asume constante. Además, la función aleatoria $Z(x)$ se supone estacionaria.
+	
+	\item \textbf{Universal Kriging:} Corresponde al modelo que define la ecuación \ref{eq:krguni}, Donde se emplean funciones de regresión conocidas. En general, se supone $Z(x)$ es estacionaria.
+	
+\end{enumerate}
+
+Que el proceso modelado mediante kriging sea estacionario, tiene como consecuencia que la función de covarianza del proceso, depende de la diferencia de posiciones $\text{cov}(Z(x),Z(x')) = G(x-x')$ entre puntos. Esto guarda relación con la idea del semivariograma. En general un semivariograma ofrece un modelo para estimar la varianza del proceso estocástico entre dos puntos, $\gamma(x) = \frac{1}{2}\text{var}(Z(x)-Z(0))$. En algunas aplicaciones se emplean modelos, como el empleado en la ecuación \ref{eq:cov}, $\gamma(h) = \frac{1}{2}\xi(x,x+h)$. Los resultados van a depender entonces de cómo se estimen los parámetros del semivariograma y de que modelo se use.
+
+En aplicaciones con un número adecuado y distribuido de medidas del proceso $(x)$, se puede estimar con la siguiente ecuación:
+
+\[
+\gamma(h) = \frac{1}{2N(h)} \sum_{i=1}^{N(h)} [Z(x^{(i)}) - Z(x^{(i)} + h)]^2
+\]  
+
+donde:
+\begin{itemize}
+	\item \( \gamma(h) \) es la semivarianza para puntos separados una distancia \( h \),
+	\item \( Z(x^{(i)}) \) es el valor del campo en \( x^{(i)} \),
+	\item \( N(h) \) es el número de pares de datos (medidas del campo) que se  tiene a una distancia \( h \).
+\end{itemize}
+
+Estrictamente hablando, el semivariograma debería ser la representación gráfica de la semivarianza y, además, para el caso estimado, al depender solo de la distancia, y no de las posiciones relativas nuestro campo ha de ser además de estacionario isotrópico.
+
+
+
+Supongamos que tenemos un conjunto de $n$ medidas ruidosas, de nuestro campo $y = [y(x^{(1)}),y(x^{(2)}),\cdots, y(x^{(n)})]$. Nuestras medidas son una realización del proceso gaussiano,
 \begin{equation}
-Y(x) = R(x)\beta + \mathcal{Z}
+y = R(x)\beta + \mathcal{Z}
 \end{equation}
 Donde,
 \begin{equation}
@@ -39,22 +75,24 @@ r_1(x^{(1)})&\cdots&r_k(x^{(1)})\\
 r_1(x^{(n)})&\cdots&r_k(x^{(n)})
 \end{pmatrix}
 \end{equation}
-con $\mathcal{Z} = (Z(x^{(1)}),\cdots,Z(x^{(n)}))^T$
+con $\mathcal{Z} = [Z(x^{(1)}),\cdots,Z(x^{(n)}))^T]$. En otras palabras; apilamos los resultados de nuestras medidas.
 
-Supongamos que queremos construir un predictor lineal $Y = a_x^Ty$ a partir de las medidas. Es decir yo quiero inferir cual sería el valor de mi campo en un punto x, supuesto que conozco los valores en los puntos medidos. De alguna manera, lo que estoy definiendo es una media ponderada de los valores que he medido. 
+Supongamos que queremos construir un predictor lineal $\hat{\Omega}(x) = a_x^Ty$ a partir de las medidas. Es decir yo quiero inferir cual sería el valor de mi campo $E[\Omega]$ en un punto x, supuesto que conozco los valores en los puntos medidos. De alguna manera, lo que estoy definiendo es una media ponderada de los valores que he medido. 
 
-Podemos definir entonces el error cuadrático medio a partir del valor esperado de la diferencia entre las medidas y el modelo gaussiano,
+Podemos definir entonces el valor esperado del error cuadrático medio a partir de la diferencia entre las medidas y el modelo gaussiano,
 
 \begin{equation}\label{eq:E}
 \begin{split}
-E[(a_x^Ty-Y(x))^2] &= E[a_x^Tyy^Ta_x + Y(x)^2 - 2a_x^TyY(x)]=\\
+E[(a_x^Ty-\Omega(x))^2] &= E[a_x^Tyy^Ta_x + \Omega(x)^2 - 2a_x^Ty\Omega(x)]=\\
 &E[a_x^T(R\beta+\mathcal{Z})((R\beta+\mathcal{Z})^Ta_x] +\\
 &E[(r^T(x)\beta+Z(x))^2] +\\
 &E[-2a_x^T(R\beta+\mathcal{Z})(r^T(x)\beta+Z(x))]
 \end{split}
 \end{equation}
 
-Desarrollamos por separado cada uno de los tres sumandos de la ecuación (\ref{eq:E}),
+Donde hemos hecho uso de que $y = R\beta + \mathcal{Z}$  y $\Omega(x) = r^T(x)\beta +Z(x)$.
+
+Desarrollamos ahora por separado cada uno de los tres sumandos de la ecuación (\ref{eq:E}),
 
 \begin{enumerate}
 \item \begin{equation}
@@ -64,7 +102,7 @@ a_x^TR\beta\beta^TR^Ta_x +2a_x^TR\beta E[\mathcal{Z}^T]a_x + a_x^TE[\mathcal{Z}\
 =a_x^TR\beta\beta^TR^Ta_x +a_x^T\sigma_z^2Ka_x
 \end{split}
 \end{equation}
-Donde hemos hecho uso de que el valor esperado del vector $\mathcal{Z}$ tiene que ser nulo. Y además $\mathcal{Z}\mathcal{Z}^T$ Es una matriz de covarianza que podemos definir a partir de la ecuación \ref{eq:cov} como $\sigma_zK$ con $K_{i,j} = \xi(x^{(i)},x^{(j)})$.  
+Donde hemos hecho uso de que el valor esperado del vector $\mathcal{Z}$ tiene que ser nulo. Y además $E[\mathcal{Z}\mathcal{Z}^T]$ es una matriz de covarianza que podemos definir a partir de la ecuación \ref{eq:cov} como $\sigma_zK$ con $K_{i,j} = \xi(x^{(i)},x^{(j)})$.  
 
 \item \begin{equation}
 \begin{split}
@@ -82,18 +120,18 @@ E[-2a_x^T(R\beta + \mathcal{Z})(r^T(x)\beta +Z(x))]=\\
 =-2a_x^TR\beta r(x)^T\beta -2a_x^T\sigma_zk_x
 \end{split}
 \end{equation}
-Donde, $k_x = \sigma_z^2(\xi(x,x_1),\xi(x,x_2),\cdots,\xi(x,x_n))^T$ y las esperanzas de $Z$ y $\mathcal{Z}$ son cero.
+Donde, $E[\mathcal{Z}Z(x)] := k_x = \sigma_z^2(\xi(x,x_1),\xi(x,x_2),\cdots,\xi(x,x_n))^T$ y las esperanzas de $Z$ y $\mathcal{Z}$ son cero.
 \end{enumerate}
 Llegamos por tanto a que,
 \begin{equation}\label{eq:min}
 \begin{split}
-E[(a_x^Ty-Y(x))^2] =\\
+E[(a_x^Ty-\Omega(x))^2] =\\
 a_x^TR\beta\beta^TR^Ta_x +a_x^T\sigma_z^2Ka_x+r(x)^T\beta\beta^Tr(x) + \sigma_z^2-2a_x^TR\beta r(x)^T\beta -2a_x^T\sigma_zk_x=\\
 =(a_x^TR\beta-r(x)^T\beta)^2+a_x^T\sigma_z^2Ka_x+\sigma_z^2-2a_x^T\sigma_z^2 k_x
 \end{split}
 \end{equation}
 
-A nosotros nos gustaría minimizar esta expresión, ya que eso es tanto como minimizar el error esperado. Si nos fijamos en el primer término cuadrático, si nuestro ajuste es bueno, deberíamos hacer este término cero: $R^Ta_x = r(x)$, Si lo hacemos así, estamos construyendo un estimador sin sesgo. $Y = a_x^Ty = a_x^TR\beta$ donde $Y$ es el valor de la variable estocástica que queremos predecir $Y = r(x)^T\beta$.
+A nosotros nos gustaría minimizar esta expresión, ya que eso es tanto como minimizar el error esperado. Si nos fijamos en el primer término cuadrático, si nuestro ajuste es bueno, deberíamos hacer este término cero: $R^Ta_x = r(x)$, Si lo hacemos así, estamos construyendo un estimador sin sesgo. $Y= a_x^Ty = a_x^TR\beta$ donde $Y = E[\Omega]$ es el valor de la variable estocástica que queremos predecir $Y = r(x)^T\beta$.
 
 Por tanto deberíamos minimizar el resto de expresión,
 \begin{equation}
@@ -104,7 +142,7 @@ Por tanto deberíamos minimizar el resto de expresión,
 \end{split}
 \end{equation}
 
-Si derivamos con respeto a $a^T$, igualamos a cero y añandimos un multiplicador de Lagranje $-\lambda R$ a la expresión derivada, obtenemos:
+Si derivamos con respeto a $a^T$, igualamos a cero, y añadimos un multiplicadores de Lagranje $-R\lambda$ a la expresión derivada, obtenemos:
 \begin{equation}
 \begin{split}
 &Ka_x - k_x-R\lambda = 0\\
@@ -140,8 +178,8 @@ M = \begin{bmatrix}
 A & B\\
 C & D
 \end{bmatrix},\; M^{-1} = \begin{bmatrix}
-A^{-1}+A^{-1}B(D-A^{-1}BC)^{-1}CA^{-1} & -A^{-1}B(D-A^{-1}BC)^{-1}\\
--(D-A^{-1}BC)^{-1}CA^{-1} & (D-A^{-1}BC)^{-1}
+A^{-1}+A^{-1}B(D-CA^{-1}B)^{-1}CA^{-1} & -A^{-1}B(D-CA^{-1}B)^{-1}\\
+-(D-CA^{-1}B)^{-1}CA^{-1} & (D-CA^{-1}B)^{-1}
 \end{bmatrix}
 \end{equation*}
 
@@ -150,28 +188,28 @@ Si lo aplicamos a nuestro sistema,
  \begin{pmatrix}
 a_x \\ -\lambda
 \end{pmatrix}= \begin{pmatrix}
-K^{-1}-K^{-1}R(K^{-1}RR^T)^{-1}R^TK^{-1} & K^{-1}R(K^{-1}RR^T)^{-1}\\
-(K^{-1}RR^T)^{-1}R^TK^{-1} & -(K^{-1}RR^T)^{-1}
-\end{pmatrix}^{-1}\begin{pmatrix} k_x \\ r(x)
+K^{-1}-K^{-1}R(R^TK^{-1}R)^{-1}R^TK^{-1} & K^{-1}RR^T(K^{-1}R)^{-1}\\
+(R^TK^{-1}R)^{-1}R^TK^{-1} & -(R^TK^{-1}R)^{-1}
+\end{pmatrix}\begin{pmatrix} k_x \\ r(x)
 \end{pmatrix}
 \end{equation}
 
 Con lo que optenemos para $a_x$,
 \begin{equation}
-a_x = (K^{-1}-K^{-1}R(K^{-1}RR^T)^{-1}R^TK^{-1})k_x +  K^{-1}R(K^{-1}RR^T)^{-1}r(x)
+a_x = (K^{-1}-K^{-1}R(R^TK^{-1}R)^{-1}R^TK^{-1})k_x +  K^{-1}R(R^TK^{-1}R)^{-1}r(x)
 \end{equation}
 
-Luego nuestra estimación del valor de $Y(x)$ sería,
+Luego nuestra estimación del valor de $\Omega(x)$ sería,
 \begin{equation}
 \begin{split}
-Y(x) = a_x^Ty =\\
-\left[k_x^T(K^{-1}-K^{-1}R(R^TRK^{-1})^{-1}R^TK^{-1})+r(x)^T(R^TRK^{-1})^{-1}R^TK^{-1}\right]y=\\
+\Omega(x) = a_x^Ty =\\
+\left[k_x^T(K^{-1}-K^{-1}R(R^TK^{-1}R)^{-1}RK^{-1})+r(x)^T(R^TK^{-1}R)^{-1}R^TK^{-1}\right]y=\\
 k_x^TK^{-1}(y-R\beta)+r(x)^T\beta
 \end{split}
 \end{equation}
 Que es precisamente la ecuación (18) del artículo con,
 \begin{equation}
-\beta = (R^TRK^{-1})^{-1}R^TK^{-1}
+\beta = (R^TK^{-1}R)^{-1}R^TK^{-1}y
 \end{equation}
 
 En realidad, si somos rigurosos, el valor de $\beta$ que estamos empleando es una estimación, y deberiamos llamarle $\hat{\beta}$, siguiendo una notación que es más o menos estándar,para dejar claro que es un valor estimado.
@@ -179,7 +217,7 @@ En realidad, si somos rigurosos, el valor de $\beta$ que estamos empleando es un
 Lo que hemos obtenido es el valor esperado para el modelo lineal que suponemos siguen nuestros predictores. Nos faltaría calcular la varianza. En realidad, coincide con el valor cuadrático medio que hemos optimizado,
 \begin{equation}\label{eq:var}
 \begin{split}
-\sigma_{\phi}^2(x) = E[(a_x^Ty-Y(x))^2] =\\
+\sigma_{\phi}^2(x) = E[(a_x^Ty-\Omega(x))^2] =\\
 E[(k_x^TK^{-1}(y-R\beta)+r(x)^T\beta-r(x)^T\beta-Z(x))^2] =\\
 E[(k_x^TK^{-1}(y-R\beta)+Z(x))^2]=\\
 E[(k_x^TK^{-1}(R\beta+\mathcal{Z}-R\beta)-Z(x))^2]=\\
@@ -193,10 +231,42 @@ Si desarrollamos el cuadrado de la última expresión de la ecuación (\ref{eq:v
 \begin{split}
 \sigma_{\phi}^2(x) = E[(k_x^TK^{-1}\mathcal{Z}+Z(x))^2]=\\
 E\left[k_x^TK^{-1}\mathcal{Z}\mathcal{Z}^TK^{-1}k_x -2k_x^TK^{-1}\mathcal{Z}Z(x)+ Z(x)^2\right]=\\
-k_x^TK^{-1}E[\mathcal{Z}\mathcal{Z}^T]k_x -2k_x^TK^{-1}\sigma_zk_x+\sigma_z^2=\\
+k_x^TK^{-1}E[\mathcal{Z}\mathcal{Z}^T]K^{-1}k_x -2k_x^TK^{-1}\sigma_zk_x+\sigma_z^2=\\
 k_x^TK^{-1}\sigma_zKK^{-1}k_x - 2k_x^TK^{-1}\sigma_zk_x+\sigma_z^2=\\
-= (k_x^TK^{-1}k_x -1)\sigma_z^2
+= (1-k_x^TK^{-1}k_x)\sigma_z^2
 \end{split}
 \end{equation}
+\section{variogramas, semivariogramas, (auto)correlación y covarianza}
+Las tres cosas están relacionadas. Hay que ir poco a poco con los detalles pero en primera aproximación todas dan una medida de la correlación espacial entre los valores de un campo aleatorio $f(\mathbf{x}) \in \mathbb{R}$.
 
+Esta correlación se hace depender en principio solo de de la distancia entre puntos y, si acaso, también en la dirección. Lo habitual es definir un modelo para la correlación y, a partir de él definir las otras dos magnitudes,
+
+Variograma:
+\begin{equation}
+	\gamma(r) = \sigma^2\cdot(1-\rho(r)) + n
+\end{equation}
+ Debería comprobarlo, pero no estoy seguro si esto es el variograma o el semivariograma. En cualquier caso uno y otro se diferencian en un factor 2.
+ 
+ Covarianza:
+ \begin{equation}
+ 	C(r) = \sigma^2\cdot \rho(r) 	
+ \end{equation}
+ 
+ Veamos los detalles. $r$ es la distancia entre los puntos para los que se quiere calcular el valor del variograma o del de la covarianza $sigma^2$ es la varianza del proceso. $n$ es el llamado nugget nos da un valor distinto de cero para $r=0$. Mása adelante lo veremos más claro con un ejemplo.
+ 
+ Función de correlación,
+ 
+ \begin{equation}
+ 	\rho(r) = cor(s\cdot\frac{r}{l})
+ \end{equation} 
+ 
+Se trata de una función de correlación normaliza. $s$ es un factor de escala para normalizar y $l$ representa la distancia máxima de correlación. Es decir, la distancia a partir de la cual los valores del campo ya no se consideran correlacionados.
+
+Veamos un ejemplo típico, supongamos que elegimos para la correlación un modelo gaussiano,
+
+\begin{equation}
+	\phi(r) = e^{-(\frac{r}{l})^2}
+\end{equation}
+Donde tomamos directamente $s=1$. Es facil ver que el modelo nos da una correlación 1 para $r=0$ y la correlación tiene a 0 cuando $r\to \infty$ 
+ 	
 \end{document}
