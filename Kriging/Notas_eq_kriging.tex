@@ -267,6 +267,13 @@ Veamos un ejemplo típico, supongamos que elegimos para la correlación un model
 \begin{equation}
 	\phi(r) = e^{-(\frac{r}{l})^2}
 \end{equation}
-Donde tomamos directamente $s=1$. Es facil ver que el modelo nos da una correlación 1 para $r=0$ y la correlación tiene a 0 cuando $r\to \infty$ 
+Donde tomamos directamente $s=1$. Es facil ver que el modelo nos da una correlación 1 para $r=0$ y la correlación tiene a 0 cuando $r\to \infty$. Dependiendo del valor que demos a $l$, nos encontramos con que aumenta o disminuye la distancia a la cual la correlación deja de ser significativa. 
+
+La covarianza simplemente, ajusta los valores de la correlación de acuerdo con el valor que damos a la varianza $\sigma^2$.
+
+El variograma no es más que el recíproco de la covarianza desplazado el valor que indique el nugget.
+
+En geoestadística además es frecuente definir el sill como la suma de la varianza + el nugget. Nos daría el valor estacionario del semi-variograma para puntos muy separados entre sí. Es decir, nos da:
+$\lim_{h\to\infty}\gamma(r)$ 
  	
 \end{document}
