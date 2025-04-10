@@ -120,13 +120,13 @@ def regresor(x,xm,beta,Kinv,coef,semivar,sigmaz=0.5):
     kx = np.zeros(numdat)
     #vector de ceros para guardar las salidas
     phihat = np.zeros(numreg)
-    #vector de ceros para guardar las variazas en los puntos calculados
+    #vector de ceros para guardar las varianzas en los puntos calculados
     sigphi2 = np.zeros(numreg)
     for i in rreg:
         #calculamos las Kx
         for j in rdat:
             kx[j] = semivar(x[i],xm[j])
-        #calcualamos los valores de la regresión y la variaza
+        #calcualamos los valores de la regresión y la varianza
         phihat[i] = x[i]@beta + kx@coef
         sigphi2[i] = sigmaz**2*(1-kx@Kinv@kx)
     return phihat ,sigphi2   
