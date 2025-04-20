@@ -51,12 +51,14 @@ def rotaynorm(theta,sigma):
 def J(x,xi,xn,alpha):
     j =0
     for i in range(len(xn)):
-        j += (xi-xn[i])@(xi-xn[i])
+        j += (xn[i]-x)@(xn[i]-x)
     return -alpha*j+(xi-x)@(xi-x)
 
 def rst(x,kr,b,fmax):
     z,var = kr.execute('points',x[0],x[1])
-    return(z[0]+b*var[0]-fmax)
+    cos = z[0]+b*var[0]-fmax
+    print(cos)
+    return(cos)
     
 x = y = np.arange(-25.,25.2,0.2)
 #nos vamos a generar un campo y sus resultados en una malla formada
@@ -89,7 +91,10 @@ for i in range(mogo.shape[0]):
 ax = plt.figure().add_subplot(projection='3d')
 ax.plot_wireframe(xm,ym,V)
 plt.xlabel('x')
-
+plt.figure()
+plt.contourf(xm,ym,V,30)
+plt.title('campo')
+plt.colorbar()
 #ahora viene lo mas importante de toda la fiesta, que es definirse
 #un modelo de covarianza. En realidad, parece que define un modelo
 # completo, en el que se cosidera, la covarianza, la correlación y 
@@ -100,71 +105,50 @@ plt.xlabel('x')
 modelito = gs.Gaussian(dim=2,var=0.5,len_scale=5)
 
 #creanmos el krigenador ;)
-
+datos = []
 #elegimos posiciones arbitrarias de partida (cuatro agentes) Empezamos cerca
 #del centro, todos comunicados siempre
-pos = np.array([[0.,0.],[0.,1.],[1.,1.],[1.,0.]])
+pos = np.array([[0.,0.],[3.,1.],[1.,1.],[0.,10.]])
 Vm = np.zeros(pos.shape[0])
 for i in range(pos.shape[0]):
     Vm[i] =  100*gausianilla(pos[i],sigmar,mu,norm) + \
     200*gausianilla(pos[i],sigmar1,mu1,norm1) +\
     10*gausianilla(pos[i],sigmar2,mu2,norm2)
-
+Vmt=Vm.copy()
 #modelo inicial    
-krig = pkr.uk.UniversalKriging(pos[:,0],pos[:,1],Vm,modelito)
+krig = pkr.uk.UniversalKriging(pos[:,0],pos[:,1],Vmt,modelito)
 #Vhat,var =krig.execute('points',pos[:,0],pos[:,1])
-maxvh = max(Vm)
-alpha = 0.1
-b = 0.0001
+maxvh = max(Vmt)
+alpha = 0.01
+b = 0.2
 
-
-#dibujamos el campo estimado sobre el mesh de puntos inicial
-Vhatms,varms = krig.execute('grid',x,y)
-# ax2 = plt.figure().add_subplot(projection='3d')
-# ax2.plot_wireframe(xm,ym,Vhatms)
-# plt.xlabel('x')
-# #dibujamos la varianza
-# Vhatms,varms = krig.execute('grid',x,y)
-# ax3 = plt.figure().add_subplot(projection='3d')
-# ax3.plot_wireframe(xm,ym,varms)
-# plt.xlabel('x')
-# #dibujamos la funcion restricción
-# ax4 = plt.figure().add_subplot(projection='3d')
-# ax4.plot_wireframe(xm,ym,Vhatms+b*varms)
-# ax4.plot_wireframe(xm,ym,maxvh*np.ones(xm.shape),color='r')
-# plt.xlabel('x')
 bnds =([-25,25],[-25,25])
-par =(krig,b,maxvh)
-const = {'type': 'ineq', 'fun': rst, 'args': par }
-res = mini(J,[0,0],(pos[0],pos[1:],alpha),bounds=bnds,constraints=const)
 
-#sobre la grafica de antes, pinto el campo estimado
-#ax.plot_wireframe(xm,ym,Vhat,color='r')
-#ax.scatter(xpyp[0,:],xpyp[1,:],Vp,'or')
-
+for i in range(20):
+    par =(krig,b,maxvh)
+    const = {'type': 'ineq', 'fun': rst, 'args': par }
+    res = np.zeros([4,2])
+    for d in range(pos[-4:].shape[0]):
+        r = mini(J,pos[d],(pos[d],np.delete(pos,d,0),alpha),bounds=bnds,constraints=const)
+        res[d] = r.x
+        vx,varx =krig.execute('points',r.x[0],r.x[1])
+        print('ext',vx[0]+b*varx[0]-maxvh)
 #sacamos los resultados en plano que se ven muy bien del resultado de kriging
-plt.figure()
-plt.contourf(xm,ym,Vhatms,30)
-plt.title('campo vhat')
-plt.scatter(pos[:,0],pos[:,1],color='w')
-plt.scatter(res.x[0],res.x[1],color='r')
-plt.colorbar()
+    if i%2:
+        Vhatms,varms = krig.execute('grid',x,y)
+        plt.figure()
+        plt.contourf(xm,ym,Vhatms,30)
+        plt.title('campo vhat')
+        plt.scatter(pos[:,0],pos[:,1],color='w')
+        plt.scatter(res[:,0],res[:,1],color='r')
+        plt.colorbar()
 
+    pos = np.append(pos,res,0)
 # plt.figure()
-
-#pintamos juntos, curvas de nivel de ambos y puntos empleados en la regresión
-# plt.contour(xm,ym,Vhat,20)
-# plt.contour(xm,ym,V)
-# plt.scatter(xpyp[0,:],xpyp[1,:])
-
-#pintamos el resutado en plano para comporar con el estimado
-# plt.figure()
-# plt.contourf(xm,ym,var,30)
-# plt.title('Varianza')
-# plt.colorbar()
-
-
-# plt.figure() 
-# plt.contourf(xm,ym,V,30)
-# plt.title('campo V')
-# plt.colorbar()
+    for i in range(res.shape[0]):
+        Vm[i] =  100*gausianilla(res[i],sigmar,mu,norm) + \
+            200*gausianilla(res[i],sigmar1,mu1,norm1) +\
+            10*gausianilla(res[i],sigmar2,mu2,norm2)
+    Vmt= np.append(Vmt,Vm)    
+    krig = pkr.uk.UniversalKriging(pos[:,0],pos[:,1],Vmt,modelito)
+    maxvh = max(Vmt)

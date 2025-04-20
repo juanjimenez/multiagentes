@@ -69,9 +69,9 @@ mu2 = np.array([-10,18])
 
 for i in range(mogo.shape[0]):
     for j in range(mogo.shape[1]):
-        V[i,j] = 100*gausianilla(mogo[i,j,:],sigmar,mu,norm) + \
-        200*gausianilla(mogo[i,j,:],sigmar1,mu1,norm1) +\
-        10*gausianilla(mogo[i,j,:],sigmar2,mu2,norm2)
+        V[i,j] = 1000*gausianilla(mogo[i,j,:],sigmar,mu,norm) + \
+        2000*gausianilla(mogo[i,j,:],sigmar1,mu1,norm1) +\
+        100*gausianilla(mogo[i,j,:],sigmar2,mu2,norm2)
 ax = plt.figure().add_subplot(projection='3d')
 ax.plot_wireframe(xm,ym,V)
 plt.xlabel('x')
@@ -85,12 +85,12 @@ modelito = gs.Gaussian(dim=2,var=0.5,len_scale=50)
 
 #generamos unos puntos al tuntun para evaluar en ellos la funcion creada
 rng = np.random.default_rng(seed = 123456789)
-xpyp = 50*rng.random([2,450])-25
+xpyp = 50*rng.random([2,32])-25
 Vp = np.zeros(xpyp.shape[1])
 for i in range(xpyp.shape[1]):
-    Vp[i] = 100*gausianilla(xpyp[:,i],sigmar,mu,norm) + \
-    200*gausianilla(xpyp[:,i],sigmar1,mu1,norm1) +\
-    10*gausianilla(xpyp[:,i],sigmar2,mu2,norm2)
+    Vp[i] = 1000*gausianilla(xpyp[:,i],sigmar,mu,norm) + \
+    2000*gausianilla(xpyp[:,i],sigmar1,mu1,norm1) +\
+    100*gausianilla(xpyp[:,i],sigmar2,mu2,norm2)
 #creanmos el krigenador ;)
 krig = gs.krige.Universal(modelito,[xpyp[0,:],xpyp[1,:]],Vp,'linear')
 Vhat,var =krig([x,y],mesh_type='structured')
@@ -112,4 +112,4 @@ plt.colorbar()
 plt.figure() 
 plt.contourf(xm,ym,V,30)
 plt.title('campo V')
-plt.colorbar(                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           )()
+plt.colorbar()
