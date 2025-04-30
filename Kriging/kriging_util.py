@@ -116,7 +116,7 @@ def Jrst(x,xi,xn,alpha,kr,b,fmax):
     for i in range(len(xn)):
         j += (xn[i]-x)@(xn[i]-x)
     z,var = kr([x[0],x[1]])
-    cos = z[0]+b*var[0]-fmax    
+    cos = z[0]+b*var[0]**0.5-fmax    
     sal = -alpha*j+(xi-x)@(xi-x) + 1e6*(cos<=0)
     #print(sal)
     return sal

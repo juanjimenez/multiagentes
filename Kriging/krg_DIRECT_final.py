@@ -61,7 +61,7 @@ modelito = gs.Gaussian(dim=2,var=0.5,len_scale=50)
 #generamos unos puntos al tuntun para evaluar en ellos la funcion creada
 #pos = np.array([[-1.,1.],[1.,1.],[1.,-1.],[-1.,-1.]])
 #pos = np.array([[-10.,8.],[1.,1.],[1.,-1.],[-1.,-1.]])
-pos = np.array([[-1.,1.],[1.,1.],[15.,15.],[-1.,-1.]])
+pos = np.array([[-1.,1.],[1.,1.],[10.,-4.],[-1.,-1.]])
 #mido el campo en los puntos que tengo
 Vm = np.zeros(pos.shape[0])
 for i in range(pos.shape[0]):
@@ -97,10 +97,10 @@ pmax = pos[np.where(Vmt.flat == max(Vmt))]
 
 #####Parámetros del modelo de búsqueda####################
 alpha = 0.25 #peso de la suma de la distancia del punto a los vecinos 
-b = 3 #peso que se da a la varianza en la función de restricción
+b = 10 #peso que se da a la varianza en la función de restricción
 
 #valor de la restricción sobre todos los puntos de la cuadrícula
-cs = Vhat+b*var-maxvh
+cs = Vhat+b*var**0.5-maxvh
 
 bnds =((-25,25),(-25,25)) #cotas en x e y del D, el espacio de búsqueda
 i = 0 #iniciamos unn contador para saber cuantas iteraciones está haciendo
@@ -157,7 +157,7 @@ while (max(cs.flat) > 0)&(i < 1000):
     Vhatms,varms = krig([x,y],mesh_type='structured')
     #y así obtener una nueva condición de parada, que al menos haya un punto 
     # de la restricción por encima de cero
-    cs = Vhatms+b*varms-maxvh
+    cs = Vhatms+b*varms**0.5-maxvh
     
     #de vez en cuando (ahora cada cinco iteraciones) dibujamos los resultados
     #permite ver lo que pasa con los campos estimados pero consume recursos...
