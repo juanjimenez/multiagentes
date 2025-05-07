@@ -1,0 +1,119 @@
+\documentclass{beamer}
+\usetheme{default} %Montpellier}
+\usepackage{amsmath,amsthm}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric}
+\usetikzlibrary{shapes.multipart}
+\usetikzlibrary{decorations.pathreplacing}
+\usepackage[utf8]{inputenc}
+\usepackage[english,spanish]{babel}
+\decimalpoint
+\usepackage{amstext}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\title{Generalised Coordination of Multi-robot System}
+\author{Juan Jiménez}
+%\setbeamertemplate{navigation symbols}{} 
+\logo{\includegraphics[width=.08\textwidth]{irobocity2030.jpg}}
+\institute{Universidad Complutense de Madrid \\Dto. de  Arquitectura de Computadores y Automática.} 
+\date{\today}
+\setbeamertemplate{footline}[frame number]
+\AtBeginSubsection[]
+{
+	\begin{frame}<beamer>
+		\frametitle{índice}
+		\tableofcontents[currentsection,currentsubsection]
+	\end{frame}
+} 
+\begin{document}
+\begin{frame}[plain]
+    \maketitle
+\end{frame}
+\begin{frame}{Preliminary notions}
+	We want to achieve a method to coordinate the evolution of a group of Agents in a common state space $\mathbb{R}^d$
+	
+\end{frame}
+\begin{frame}{The Generalised Coordination Problem}
+
+\begin{equation*}
+	\lim_{t\to \infty} \text{dist}\left(x_{\mathcal{N}}(t),\mathcal{D}\right)=0,
+\end{equation*}
+
+where $\mathcal{D} \subset (\mathbb{R}^d)^n$ is a desired configuration set	
+\end{frame}
+
+\begin{frame}{Local and Global Coordinate Frames}
+	
+\begin{block}{We define two coordinate frames:}
+	\begin{itemize}
+		\item A Global (fixed to Earth) coordinate frame, $\Sigma$, Common to every agent
+		\item A Local (fixed to body) coordinate frame $\Sigma_i$ for each agent $i$
+	\end{itemize}
+\end{block}	
+
+A global coordinate $p(t) in \mathbb{R}^d$ and a local coordinate $p^{[i]}(t) \in \mathbb{R}^d$ are transformed into each other as,
+\begin{equation*}
+	p((t) = M_i(t)p^{[i]}(t) + b_i(t)
+\end{equation*}
+		Where $(M_i(t),b_i(t)) \in \mathcal{M}\ltimes \mathcal{B}$. 
+		 
+		$\mathcal{M}\ltimes \mathcal{B}$ is a frame transformation set, typically a subgroup of, $\text{scaled}(O(d))\ltimes \mathbb{R}^d$ 
+\end{frame}
+
+\begin{frame}{The problem}
+\begin{block}{The Kinematic model}	
+Given a transformation set $\mathcal{M}\ltimes \mathcal{B}$ and the coordinate transformation $p((t) = M_i(t)p^{[i]}(t) + b_i(t): (M_i(t),b_i(t)) \in \mathcal{M}\ltimes \mathcal{B}$ .
+We define the kinematic model
+\begin{equation*}
+	\dot x_i(t) = M_i(t)u_i(t)
+\end{equation*}  
+\end{block}	
+\end{frame}
+
+\begin{frame}{The problem}
+	\begin{block}{Local Coordinates}	
+		The relative position $x^{[j]}_i$ of neighbor $j \in \mathcal{N}_i$ wrt agent $i$ is given as,
+		\begin{equation*}
+			x^{[j]}_i(t) = M_i^{-1}(t)(x_j(t)-b_i(t)) = (M_i(t),b_i(t))^{-1}\bullet x_j(t)
+		\end{equation*}  
+	\end{block}		
+\end{frame}
+
+\begin{frame}{The problem}
+	\begin{block}{The admissible controller}	
+		for a graph $G=(\mathcal{N},\mathcal{E})$ that sets the neighborhood of de agents 
+		\begin{equation*}
+			u_i(t) = c_i\left(x^{[i]}_{\mathcal{N}_i}(t)\right)
+		\end{equation*}
+		Where function $c_i:\left(\mathbb{R}^d\right)^{\vert \mathcal{N}_i \vert} \to \mathbb{R}^d$ and $\mathcal{N}_i \subset \mathcal{N}$ is the neighbor set of agent $i$.
+	\end{block}
+	
+		$c_i$ is called a \emph{distributed controller with relative measurements}
+			
+\end{frame}
+
+\begin{frame}{The problem}
+	To achieve the generalised coordination with respect to a set $\mathcal{D} \subset \left(\mathbb{R}^d\right)^n$ we need to design a controller that asymptotically stabilises $\mathcal{D}$:
+	\begin{block}{Gradient-flow approach}	
+		\begin{equation*}
+			x_i(t) = -k_i\frac{\partial v}{\partial x_i}\left(x_{\mathcal{N}}(t)\right)
+		\end{equation*}
+	\end{block}
+	\begin{itemize}
+		\item With a non-negative function $v:\left(\mathbb{R}^d\right)^n \to \mathbb{R}_+$ and a positive constant $k_i > 0$
+		\item The objective function $v\left(x_{\mathcal{N}}\right)$ should be an indicator of $\mathcal{D}$ that is, $v\left(x_{\mathcal{N}}\right) \in \mathcal{V}_{ind}(\mathcal{D})$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}{The problem}
+	
+	\begin{block}{The controller}	
+		\begin{equation*}
+			c_i\left(x^{[i]}_{\mathcal{N}_i}(t)\right) = -k_iM_i^{-1}\frac{\partial v}{\partial x_i}\left(x_{\mathcal{N}}(t)\right)
+		\end{equation*}
+	\end{block}
+	\begin{alertblock}{Recall:}
+		$x_j^{[i]} = (M_i,b_i)^{-1}\bullet x_j $ represents the relative position of neighbor $j\in \mathcal{N}_i$ for $(M_i,b_i) \in \mathcal{M}\ltimes \mathcal{B}$ 
+	\end{alertblock}
+\end{frame}
+\end{document}
