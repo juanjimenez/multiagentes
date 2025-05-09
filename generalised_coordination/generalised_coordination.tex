@@ -6,8 +6,7 @@
 \usetikzlibrary{shapes.multipart}
 \usetikzlibrary{decorations.pathreplacing}
 \usepackage[utf8]{inputenc}
-\usepackage[english,spanish]{babel}
-\decimalpoint
+\usepackage[english]{babel}
 \usepackage{amstext}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -111,6 +110,17 @@ We define the kinematic model
 		\begin{equation*}
 			c_i\left(x^{[i]}_{\mathcal{N}_i}(t)\right) = -k_iM_i^{-1}\frac{\partial v}{\partial x_i}\left(x_{\mathcal{N}}(t)\right)
 		\end{equation*}
+	\end{block}
+	\begin{alertblock}{Recall:}
+		$x_j^{[i]} = (M_i,b_i)^{-1}\bullet x_j $ represents the relative position of neighbor $j\in \mathcal{N}_i$ for $(M_i,b_i) \in \mathcal{M}\ltimes \mathcal{B}$ 
+	\end{alertblock}
+\end{frame}
+\begin{frame}{The problem}
+	
+	\begin{block}{The objective function for the controller should belong to $\mathcal{V}_{rel}(\mathcal{M}\ltimes\mathcal{B})$}	
+		\begin{multline*}
+			\mathcal{V}_{rel}(\mathcal{M}\ltimes\mathcal{B}) =\{ v(x_{\mathcal{N}}) \in \mathcal{V}_{c1}:\forall i \in \mathcal{N}, \exists \bar{c}_i: (\mathbb{R}^d)^n \to \mathbb{R}^d \\ s.t.  ((M_i,b_i)^{-1}\frac{\partial v}{\partial x_i} (x_{\mathcal{N}})=\bar{c}_i\bullet x_{\mathcal{N}}) \}
+		\end{multline*}
 	\end{block}
 	\begin{alertblock}{Recall:}
 		$x_j^{[i]} = (M_i,b_i)^{-1}\bullet x_j $ represents the relative position of neighbor $j\in \mathcal{N}_i$ for $(M_i,b_i) \in \mathcal{M}\ltimes \mathcal{B}$ 
