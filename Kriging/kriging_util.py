@@ -120,3 +120,20 @@ def Jrst(x,xi,xn,alpha,kr,b,fmax):
     sal = -alpha*j+(xi-x)@(xi-x) + 1e6*(cos<=0)
     #print(sal)
     return sal
+
+def dinamica(M,v0,x0,xd,k1,k2,k3,q,tk=0.01):
+    #supongo que calculo para todos loss agentes y que
+    #las velocidades y posiciones van en un array metidas por columnas
+    sz = v0.shape[1]
+    v = np.zeros(v0.shape)
+    x = np.zeros(x0.shape)
+    for i in range(sz):
+        for j in range(i+1,sz):
+            t = (x0[:,i] -x0[:,j])*np.exp(-(x0[:,i]-x0[:,j])@(x0[:,i]-x0[:,j]))
+            v[:,i] += t
+            v[:,j] -= t
+            #print(i,j,'\n',t,'\n',v)
+        v[:,i] = (2*k2*v[:,i] - k3*(x0[:,i]-xd[:,i]) - k1*v0[:,i])*tk/M + v0[:,i]
+        x[:,i] = v0[:,i]*tk + x0[:,i]
+    return x,v
+    

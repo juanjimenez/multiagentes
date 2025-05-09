@@ -95,75 +95,113 @@ plt.colorbar(c)
 maxvh = max(Vmt)
 pmax = pos[np.where(Vmt.flat == max(Vmt))]
 
-#####Parámetros del modelo de búsqueda####################
+#####Parámetros del modelo de búsqueda#########################################
 alpha = 0.25 #peso de la suma de la distancia del punto a los vecinos 
 b = 10 #peso que se da a la varianza en la función de restricción
+###############################################################################
 
+####Parametros del modelo dinámico#############################################
+M = 1 
+v0 = np.array([[0,0,0,0],[0,0,0,0]])
+k1 = 47
+k2 = 50
+k3 = 1600
+q = 0.1
+tk = 0.01
+###############################################################################
 #valor de la restricción sobre todos los puntos de la cuadrícula
 cs = Vhat+b*var**0.5-maxvh
 
 bnds =((-25,25),(-25,25)) #cotas en x e y del D, el espacio de búsqueda
-i = 0 #iniciamos unn contador para saber cuantas iteraciones está haciendo
+
+#calculamos un primer destino
+############optimizador####################################################
+# maxfun está de hecho en su valor por defecto = 1000n (n dimension del es
+#pacio de busqueda) (numero maximo de evaluaciones de la funcion objetivo)
+#la len_tol define el tamño de cuadricula (lado) por debajo del cual se considera
+#que el algoritmo ha convergido por defecto es 1e-6. Si se baja el valor
+# en algunos pasos no converge porque agota maxfun
+#ver ayuda de scipy. es posible que se pueda ajustar mejor
+#muy importante siempre se calcula la nueva posición para el cuarto
+#agente empezando a contar or la cola ret[0]. De este modo, cada cuatro
+#iteraciones se han renovado las posiciones de los cuatro agentes.
+visitados = pos.copy()
+destinos = pos.copy()
+for i in range(destinos.shape[0]):
+    r = direct(Jrst,bnds,args =(pos[i],np.delete(pos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
+    destinos[i] = r.x
+    
+    
+
+it = 0 #iniciamos unn contador para saber cuantas iteraciones está haciendo
 
 ###############Inicio Bucle de Búsqueda########################################
-while (max(cs.flat) > 0)&(i < 150):
+while (max(cs.flat) > 0)&(it < 40):
     #vamos a calcular mientras se cumpla la condición en los puntos de la
     #cuadricula, de que al menos hay uno en que se cumple la restricción. 
     #Se podría apretar más pero creo que no tiene sentido
     #El número de iteraciones máximo es para proteger de bucles infinitos
-    #Si se ha evaluado el campo en mil puntos el algorithmo es muuuy malo
+    #Si se ha evaluado el campo en 100 puntos el algorithmo es muuuy malo
     
-    ret = pos[-4:] #últimas posiciones de los cuatro agentes (TODO: hacer este numero adaptable)
     
-    ############optimizador####################################################
-    # maxfun está de hecho en su valor por defecto = 1000n (n dimension del es
-    #pacio de busqueda) (numero maximo de evaluaciones de la funcion objetivo)
-    #la len_tol define el tamño de cuadricula (lado) por debajo del cual se considera
-    #que el algoritmo ha convergido por defecto es 1e-6. Si se baja el valor
-    # en algunos pasos no converge porque agota maxfun
-    #ver ayuda de scipy. es posible que se pueda ajustar mejor
-    #muy importante siempre se calcula la nueva posición para el cuarto
-    #agente empezando a contar or la cola ret[0]. De este modo, cada cuatro
-    #iteraciones se han renovado las posiciones de los cuatro agentes.
-    
-    r = direct(Jrst,bnds,args =(ret[0],ret[1:],alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
-    ###########################################################################
-    
-    #evaluamos la estima de campo y varianza en el punto encontrado
-    vx,varx =krig([r.x[0],r.x[1]])
-    #imprimimos info de lo que está pasando. Se puede omitir para que 
-    #calcule más deprisa
-    print(f'i={i}\nmax={max(cs.flat)}\nrest={vx[0]+b*varx[0]-maxvh}\n{r}')
-        
-    #añadimos el punto a las posiciones visitadas
-    pos = np.append(pos,np.array([r.x]),0)     
-        
+    #los movemos hasta que uno se acerca a sus destino
+    while all(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))>0.001):
+        x0,v0 = dinamica(M,v0,pos.T,destinos.T,k1,k2,k3,q,tk)
+        pos = x0.T
+    #vemos quien ha llegado a destino
+    windex= np.nonzero(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))<=0.001)[0][0]
     #medimos en el punto nuevo 
-    Vm =  1000*gausianilla(r.x,sigmar,mu,norm) + \
-            2000*gausianilla(r.x,sigmar1,mu1,norm1) +\
-            100*gausianilla(r.x,sigmar2,mu2,norm2)
+    Vm =  1000*gausianilla(pos[windex],sigmar,mu,norm) + \
+            2000*gausianilla(pos[windex],sigmar1,mu1,norm1) +\
+            100*gausianilla(pos[windex],sigmar2,mu2,norm2)
+    
     #si la nueva medida es el valor mas grande obtenido so far, lo guardamos
     #Así como la posicion        
     if Vm > maxvh:
         maxvh = Vm
-        pmax = r.x #aqui se guarda la posición del máximo
+        pmax = pos[windex] #aqui se guarda la posición del máximo
     #Añadimos la medida a las que ya tenemos
     Vmt= np.append(Vmt,Vm)
+    
+    #añadimos el punto a la lista de visitados        
+    visitados = np.append(visitados,np.array([pos[windex]]),0) 
     #y calculamos un nuevo modelo para kriging, añadiendo la nueva posicion
     #y la nueva medida    
-    krig = gs.krige.Universal(modelito,[pos[:,0],pos[:,1]],Vmt,'linear')
+    
+    
+    krig = gs.krige.Universal(modelito,[visitados[:,0],visitados[:,1]],Vmt,'linear')
+    
+    
+    for i in range(destinos.shape[0]):
+        r = direct(Jrst,bnds,args =(pos[i],np.delete(pos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
+        destinos[i] = r.x
+    ###########################################################################
     
     #usamos el modelo para volver a estimar en la cuadricula
     Vhatms,varms = krig([x,y],mesh_type='structured')
     #y así obtener una nueva condición de parada, que al menos haya un punto 
     # de la restricción por encima de cero
     cs = Vhatms+b*varms**0.5-maxvh
+    #evaluamos la estima de campo y varianza en el punto encontrado
+    vx,varx =krig([pos[windex,0],pos[windex,1]])
+    #imprimimos info de lo que está pasando. Se puede omitir para que 
+    #calcule más deprisa
+    print(f'it={it}\nmax={max(cs.flat)}\nrest={vx[0]+b*varx[0]-maxvh}\n{r}')
+        
+    #añadimos el punto a las posiciones visitadas
+        
+        
+    
+    
+    
+    
+    
     
     #de vez en cuando (ahora cada cinco iteraciones) dibujamos los resultados
     #permite ver lo que pasa con los campos estimados pero consume recursos...
     #y tiempo. posiblemente lo menor es comentarlo, o diezmar las figuras
     #obtenidas si necesita muchas iteraciones
-    # if i%5==0:
+    # if i%10==0:
         
     #     plt.figure()
     #     c = plt.contourf(xm,ym,Vhatms.T,30)
@@ -173,7 +211,7 @@ while (max(cs.flat) > 0)&(i < 150):
     #     plt.colorbar(c)
         
     #incrementamos el contador
-    i += 1
+    it += 1
 ############## Fin del bucle de busqueda ######################################
 
 ###############forensic report#################################################
@@ -182,10 +220,7 @@ while (max(cs.flat) > 0)&(i < 150):
 plt.figure() 
 c = plt.contourf(xm,ym,V,30) #campo real
 plt.title('campo V') 
-plt.scatter(pos[0::4,0],pos[0::4,1],color = 'w') #puntos recorridos por todos los agentes
-plt.scatter(pos[1::4,0],pos[1::4,1],color = 'b')
-plt.scatter(pos[2::4,0],pos[2::4,1],color = 'r')
-plt.scatter(pos[3::4,0],pos[3::4,1],color = 'g')
+plt.scatter(visitados[:,0],visitados[:,1],color = 'w') #puntos recorridos por todos los agentes
 plt.scatter(pmax[0],pmax[1],color='m',marker ='*',s = 10) #maximo encontrado
 plt.colorbar(c)
 
@@ -212,9 +247,13 @@ c =plt.contourf(xm,ym,Vhatfinal.T,30) #campo estimado
 plt.title('campo vhat')
 plt.scatter(pos[:,0],pos[:,1],color='w') #puntos visitados
 plt.scatter(pos[-1,0],pos[-1,1],color='r') #último punto medido
-plt.scatter(pmax[0],pmax[1],color='g',marker ='*') #posición del máximo encontrado
+plt.scatter(pmax[0],pmax[0],color='g',marker ='*') #posición del máximo encontrado
 plt.colorbar(c)
 #Iteración en que se encontro el maximo (ojo en realidad es medida en que se
 #encontró)
 
 print(np.where(Vmt == maxvh))
+
+
+
+    
