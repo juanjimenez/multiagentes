@@ -87,13 +87,13 @@ plt.figure()
 c = plt.contourf(xm,ym,Vhat.T,90)
 plt.title('campo vhat')
 
-#pinto sogre e campo los puntos iniciales
+#pinto sobre el campo los puntos iniciales
 plt.scatter(pos[:,0],pos[:,1],color='r')
 plt.colorbar(c)
 
 #calculo el valor máximo medido so far y la posición
 maxvh = max(Vmt)
-pmax = pos[np.where(Vmt.flat == max(Vmt))]
+pmax = pos[np.where(Vmt.flat == max(Vmt))] 
 
 #####Parámetros del modelo de búsqueda#########################################
 alpha = 0.25 #peso de la suma de la distancia del punto a los vecinos 
@@ -104,7 +104,7 @@ b = 10 #peso que se da a la varianza en la función de restricción
 M = 1 
 v0 = np.array([[0,0,0,0],[0,0,0,0]])
 k1 = 47
-k2 = 50
+k2 = 5 #50 original
 k3 = 1600
 q = 0.1
 tk = 0.01
@@ -126,17 +126,27 @@ bnds =((-25,25),(-25,25)) #cotas en x e y del D, el espacio de búsqueda
 #agente empezando a contar or la cola ret[0]. De este modo, cada cuatro
 #iteraciones se han renovado las posiciones de los cuatro agentes.
 visitados = pos.copy()
+#separamos puntos visitados por agentes
+vagen = []
+poscum = []
+for i in pos:
+    vagen.append(i)
+    poscum.append(i)    
+        
+
+
 destinos = pos.copy()
 for i in range(destinos.shape[0]):
-    r = direct(Jrst,bnds,args =(pos[i],np.delete(pos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
+    r = direct(Jrst,bnds,args =(pos[i],np.delete(destinos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
     destinos[i] = r.x
-    
+
+   
     
 
 it = 0 #iniciamos unn contador para saber cuantas iteraciones está haciendo
 
 ###############Inicio Bucle de Búsqueda########################################
-while (max(cs.flat) > 0)&(it < 40):
+while (max(cs.flat) > 0)&(it < 100):
     #vamos a calcular mientras se cumpla la condición en los puntos de la
     #cuadricula, de que al menos hay uno en que se cumple la restricción. 
     #Se podría apretar más pero creo que no tiene sentido
@@ -148,6 +158,8 @@ while (max(cs.flat) > 0)&(it < 40):
     while all(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))>0.001):
         x0,v0 = dinamica(M,v0,pos.T,destinos.T,k1,k2,k3,q,tk)
         pos = x0.T
+    for i in range(len(poscum)):
+        poscum[i] = np.vstack((poscum[i],pos[i]))
     #vemos quien ha llegado a destino
     windex= np.nonzero(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))<=0.001)[0][0]
     #medimos en el punto nuevo 
@@ -164,7 +176,8 @@ while (max(cs.flat) > 0)&(it < 40):
     Vmt= np.append(Vmt,Vm)
     
     #añadimos el punto a la lista de visitados        
-    visitados = np.append(visitados,np.array([pos[windex]]),0) 
+    visitados = np.vstack((visitados,pos[windex]))
+    vagen[windex] = np.vstack((vagen[windex],pos[windex]))
     #y calculamos un nuevo modelo para kriging, añadiendo la nueva posicion
     #y la nueva medida    
     
@@ -173,7 +186,7 @@ while (max(cs.flat) > 0)&(it < 40):
     
     
     for i in range(destinos.shape[0]):
-        r = direct(Jrst,bnds,args =(pos[i],np.delete(pos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
+        r = direct(Jrst,bnds,args =(pos[i],np.delete(destinos,i,axis=0),alpha,krig,b,maxvh),maxfun = 2000,len_tol=1e-3)
         destinos[i] = r.x
     ###########################################################################
     
@@ -219,8 +232,11 @@ while (max(cs.flat) > 0)&(it < 40):
 #pintamos el campo real
 plt.figure() 
 c = plt.contourf(xm,ym,V,30) #campo real
-plt.title('campo V') 
-plt.scatter(visitados[:,0],visitados[:,1],color = 'w') #puntos recorridos por todos los agentes
+plt.title('campo V')
+colorin = ['c','r','k','w','b','m','g','y']
+for i in  range(len(vagen)):
+    plt.scatter(vagen[i][:,0],vagen[i][:,1],color = colorin[i]) #puntos recorridos por todos los agentes
+    plt.plot(poscum[i][:,0],poscum[i][:,1],color = 'w')
 plt.scatter(pmax[0],pmax[1],color='m',marker ='*',s = 10) #maximo encontrado
 plt.colorbar(c)
 
@@ -245,9 +261,10 @@ plt.colorbar(c)
 plt.figure()
 c =plt.contourf(xm,ym,Vhatfinal.T,30) #campo estimado
 plt.title('campo vhat')
-plt.scatter(pos[:,0],pos[:,1],color='w') #puntos visitados
-plt.scatter(pos[-1,0],pos[-1,1],color='r') #último punto medido
-plt.scatter(pmax[0],pmax[0],color='g',marker ='*') #posición del máximo encontrado
+for i in  range(len(vagen)):
+    plt.scatter(vagen[i][:,0],vagen[i][:,1],color = colorin[i]) #puntos recorridos por todos los agentes
+    plt.plot(poscum[i][:,0],poscum[i][:,1],color = 'w')
+plt.scatter(pmax[0],pmax[1],color='m',marker ='*') #posición del máximo encontrado
 plt.colorbar(c)
 #Iteración en que se encontro el maximo (ojo en realidad es medida en que se
 #encontró)
