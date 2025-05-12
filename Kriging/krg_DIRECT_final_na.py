@@ -96,15 +96,15 @@ maxvh = max(Vmt)
 pmax = pos[np.where(Vmt.flat == max(Vmt))] 
 
 #####Parámetros del modelo de búsqueda#########################################
-alpha = 0.25 #peso de la suma de la distancia del punto a los vecinos 
-b = 10 #peso que se da a la varianza en la función de restricción
+alpha = 0.50 #0.25 #peso de la suma de la distancia del punto a los vecinos 
+b = 20 #peso que se da a la varianza en la función de restricción
 ###############################################################################
 
 ####Parametros del modelo dinámico#############################################
 M = 1 
 v0 = np.array([[0,0,0,0],[0,0,0,0]])
 k1 = 47
-k2 = 5 #50 original
+k2 = 10 #50 original
 k3 = 1600
 q = 0.1
 tk = 0.01
@@ -155,13 +155,13 @@ while (max(cs.flat) > 0)&(it < 100):
     
     
     #los movemos hasta que uno se acerca a sus destino
-    while all(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))>0.001):
+    while all(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))>0.01):
         x0,v0 = dinamica(M,v0,pos.T,destinos.T,k1,k2,k3,q,tk)
         pos = x0.T
     for i in range(len(poscum)):
         poscum[i] = np.vstack((poscum[i],pos[i]))
     #vemos quien ha llegado a destino
-    windex= np.nonzero(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))<=0.001)[0][0]
+    windex= np.nonzero(np.sqrt(np.sum((destinos-pos)*(destinos-pos),axis=1))<=0.01)[0][0]
     #medimos en el punto nuevo 
     Vm =  1000*gausianilla(pos[windex],sigmar,mu,norm) + \
             2000*gausianilla(pos[windex],sigmar1,mu1,norm1) +\
