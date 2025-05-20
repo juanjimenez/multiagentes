@@ -116,6 +116,8 @@ def Jrst(x,xi,xn,alpha,kr,b,fmax):
     for i in range(len(xn)):
         j += (xn[i]-x)@(xn[i]-x)
     z,var = kr([x[0],x[1]])
+    if z[0]<0:
+        z[0] = 0
     cos = z[0]+b*var[0]**0.5-fmax    
     sal = -alpha*j+(xi-x)@(xi-x) + 1e6*(cos<=0)
     #print(sal)
@@ -135,6 +137,9 @@ def dinamica(M,v0,x0,xd,k1,k2,k3,q,tk=0.01):
             v[:,j] -= t
             #print(i,j,'\n',t,'\n',v)
         v[:,i] = (2*k2*v[:,i]/q - k3*(x0[:,i]-xd[:,i]) - k1*v0[:,i])*tk/M + v0[:,i]
+        nv = np.sqrt(v[:,i]@v[:,i]) 
+        if nv>2.:
+            v[:,i] = v[:,i]/nv*2
         x[:,i] = v0[:,i]*tk + x0[:,i]
     return x,v
     
